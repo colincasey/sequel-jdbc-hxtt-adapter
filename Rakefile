@@ -10,6 +10,7 @@ begin
     gem.email = "casey.colin@gmail.com"
     gem.homepage = "http://github.com/colincasey/sequel-jdbc-hxtt-adapter"
     gem.authors = ["Colin Casey"]
+    gem.add_dependency "sequel", ">= 3.8.0"
     gem.add_development_dependency "thoughtbot-shoulda"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
