@@ -1,3 +1,18 @@
 # encoding: utf-8
 
-puts "Hello World"
+module Sequel
+  module JDBC
+    # Database and Dataset instance methods for MS Access specific support via JDBC.
+    module HXTT
+      # Database instance methods for MS Access databases accessed via JDBC.
+      module DatabaseMethods
+
+      end
+
+      # Dataset class for MS Access datasets accessed via JDBC.
+      class Dataset < JDBC::Dataset
+
+      end
+    end
+  end
+end
