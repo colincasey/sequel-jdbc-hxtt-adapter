@@ -1,6 +1,6 @@
 = sequel-jdbc-hxtt-adapter
 
-Description goes here.
+Sequel adapter for working with MS Access files using JRuby and HXTT's pure JDBC Access driver.  Note: HXTT driver is not supplied but you can obtain a trial version or purchase it at http://www.hxtt.com/
 
 == Note on Patches/Pull Requests
  
