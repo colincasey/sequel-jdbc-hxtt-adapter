@@ -5,8 +5,8 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "sequel-jdbc-hxtt-adapter"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{TODO: longer description of your gem}
+    gem.summary = %Q{Sequel adapter for working with MS Access files using JRuby and HXTT's pure JDBC Access driver}
+    gem.description = %Q{Sequel adapter for working with MS Access files using JRuby and HXTT's pure JDBC Access driver.  Note: HXTT driver is not supplied but you can obtain a trial version or purchase it at http://www.hxtt.com/}
     gem.email = "casey.colin@gmail.com"
     gem.homepage = "http://github.com/colincasey/sequel-jdbc-hxtt-adapter"
     gem.authors = ["Colin Casey"]
