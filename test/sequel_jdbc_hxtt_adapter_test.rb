@@ -13,10 +13,6 @@ class SequelJdbcHxttAdapterTest < Test::Unit::TestCase
     File.delete(ACCESS_DB) if File.exist?(ACCESS_DB)
   end
 
-  def in_memory_db
-    Sequel.connect("jdbc:access:/_memory_/")
-  end
-
   context "when connecting to an access database" do
     should "fail to connect a non-existant database" do
       assert_raise RuntimeError  do
@@ -49,15 +45,36 @@ class SequelJdbcHxttAdapterTest < Test::Unit::TestCase
     end
   end
 
-  should "report that the database type is access" do
-    assert_equal :access, in_memory_db.database_type
-  end
+  context "after connecting" do
+    setup { @db = create_test_database }
+    teardown { delete_test_database }
 
-  context "when creating a table" do
-    setup do
+    should "report that the database type is access" do
+      assert_equal :access, @db.database_type
     end
 
-    teardown do
+    should "provide a list of existing tables" do
+      db = @db
+      db.drop_table(:testing) rescue nil
+      assert_kind_of Array, db.tables
+      assert_does_not_contain(db.tables, :testing)
+      db.create_table :testing do
+        boolean :ok
+      end
+      assert_contains(db.tables, :testing)
+    end
+
+    should "support sequential primary keys" do
+      @db.create_table(:with_pk) { primary_key :id; String :name }
+      @db[:with_pk] << {:name => 'abc'}
+      @db[:with_pk] << {:name => 'def'}
+      @db[:with_pk] << {:name => 'ghi'}
+      assert_equal @db[:with_pk].order(:name).all, [
+        {:id => 1, :name => 'abc'},
+        {:id => 2, :name => 'def'},
+        {:id => 3, :name => 'ghi'}
+      ]
+      #@db.execute("CREATE TABLE [WITH_PK] ([ID] integer AUTO_INCREMENT PRIMARY KEY, [NAME] varchar(255))")
     end
   end
 end

@@ -17,6 +17,8 @@ Sequel::JDBC::DATABASE_SETUP[:access] = proc do |db|
       end
     end
   end
+
+  # load the HXTT Access database functionality
   require 'sequel/adapters/jdbc/hxtt'
   db.extend(Sequel::JDBC::HXTT::DatabaseMethods)
   com.hxtt.sql.access.AccessDriver
