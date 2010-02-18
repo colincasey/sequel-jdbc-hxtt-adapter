@@ -6,7 +6,14 @@ module Sequel
     module HXTT
       # Database instance methods for MS Access databases accessed via JDBC.
       module DatabaseMethods
+        def database_type
+          :access
+        end
 
+        private
+        def type_literal_generic_datetime(column)
+          :time
+        end
       end
 
       # Dataset class for MS Access datasets accessed via JDBC.
