@@ -74,7 +74,66 @@ class SequelJdbcHxttAdapterTest < Test::Unit::TestCase
         {:id => 2, :name => 'def'},
         {:id => 3, :name => 'ghi'}
       ]
-      #@db.execute("CREATE TABLE [WITH_PK] ([ID] integer AUTO_INCREMENT PRIMARY KEY, [NAME] varchar(255))")
+    end
+
+    should "support timestamps, dates, and times" do
+      @db.create_table(:time) do
+        timestamp :ts
+        date :d
+        time :t
+      end
+      t1 = Time.now
+      @db[:time] << { :ts => t1, :d => t1, :t => t1 }
+      assert_equal [t1], @db[:time].map(:ts)
+      assert_equal [t1], @db[:time].map(:d)
+      assert_equal [t1], @db[:time].map(:t)
+    end
+
+    should "should correctly parse the schema" do
+      @db.create_table(:schema_test) do
+        primary_key :id
+        boolean   :b
+        integer   :i
+        timestamp :t
+        String    :s
+      end
+      assert_equal @db.schema(:schema_test, :reload => true), [
+        [:id,{:type=>:integer, :db_type=>"INTEGER AUTO_INCREMENT", :default=>nil, :allow_null=>true, :primary_key=>true, :column_size=>4, :ruby_default=>nil}],
+        [:b, {:type=>:boolean, :db_type=>"BOOLEAN", :default=>nil, :allow_null=>true, :primary_key=>false, :column_size=>0, :ruby_default=>nil}],
+        [:i, {:type=>:integer, :db_type=>"INTEGER", :default=>nil, :allow_null=>true, :primary_key=>false, :column_size=>4, :ruby_default=>nil}],
+        [:t, {:type=>:datetime, :db_type=>"TIMESTAMP", :default=>nil, :allow_null=>true, :primary_key=>false, :column_size=>8, :ruby_default=>nil}],
+        [:s, {:type=>:string, :db_type=>"VARCHAR", :default=>nil, :allow_null=>true, :primary_key=>false, :column_size=>510, :ruby_default=>nil}]
+      ]
+    end
+
+    context "when handling deletions" do
+      setup do
+        @db.create_table! :items do
+          primary_key :id
+          String :name
+          Float :value
+        end
+        @items = @db[:items]
+        @items.delete # remove all records
+        @items << {:name => 'abc', :value => 1.23}
+        @items << {:name => 'def', :value => 4.56}
+        @items << {:name => 'ghi', :value => 7.89}
+      end
+
+      should "return the number of records affected when filtered" do
+        assert_equal 3, @items.count
+        assert_equal 1, @items.filter(:value.sql_number < 3).delete
+        assert_equal 2, @items.count
+        assert_equal 0, @items.filter(:value.sql_number < 3).delete
+        assert_equal 2, @items.count
+      end
+
+      should "return the number of records affected when unfiltered" do
+        assert_equal 3, @items.count
+        assert_equal 3, @items.delete
+        assert_equal 0, @items.count
+        assert_equal 0, @items.delete
+      end
     end
   end
 end

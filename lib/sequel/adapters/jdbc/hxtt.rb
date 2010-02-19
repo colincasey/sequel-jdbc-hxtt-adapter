@@ -35,12 +35,17 @@ module Sequel
         def auto_increment_sql
           AUTO_INCREMENT
         end
+
+        def type_literal_generic_float(column)
+          :float
+        end
       end
 
       # Dataset class for MS Access datasets accessed via JDBC.
       class Dataset < JDBC::Dataset
         BOOL_TRUE = 'TRUE'.freeze
         BOOL_FALSE = 'FALSE'.freeze
+        SELECT_CLAUSE_METHODS = Dataset.clause_methods(:select, %w'limit columns from where')
 
         # access uses [] to quote identifiers
         def quoted_identifier(name)
@@ -53,6 +58,14 @@ module Sequel
 
         def literal_true
           BOOL_TRUE
+        end
+
+        def select_clause_methods
+          SELECT_CLAUSE_METHODS
+        end
+
+        def select_limit_sql(sql)
+          sql << " TOP #{@opts[:limit]}" if @opts[:limit]
         end
       end
     end
