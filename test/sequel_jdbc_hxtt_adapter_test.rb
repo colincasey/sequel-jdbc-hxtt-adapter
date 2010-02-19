@@ -105,6 +105,18 @@ class SequelJdbcHxttAdapterTest < Test::Unit::TestCase
         [:s, {:type=>:string, :db_type=>"VARCHAR", :default=>nil, :allow_null=>true, :primary_key=>false, :column_size=>510, :ruby_default=>nil}]
       ]
     end
+    
+    should "be able to filter boolean columns" do
+      @db.create_table! :bool_test do
+        boolean :val
+      end
+      @db[:bool_test] << { :val => true }
+      @db[:bool_test] << { :val => true }
+      @db[:bool_test] << { :val => false }      
+      assert_equal 3, @db[:bool_test].count
+      assert_equal 2, @db[:bool_test].filter(:val => true).count
+      assert_equal 1, @db[:bool_test].filter(:val => false).count
+    end
 
     context "when handling deletions" do
       setup do
