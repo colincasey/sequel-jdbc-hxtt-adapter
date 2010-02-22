@@ -45,7 +45,7 @@ class SequelJdbcHxttAdapterTest < Test::Unit::TestCase
     end
   end
 
-  context "after connecting" do
+  context "with test database" do
     setup { @db = create_test_database }
     teardown { delete_test_database }
 
@@ -145,6 +145,66 @@ class SequelJdbcHxttAdapterTest < Test::Unit::TestCase
         assert_equal 3, @items.delete
         assert_equal 0, @items.count
         assert_equal 0, @items.delete
+      end
+    end
+
+    context "using transactions" do
+      setup do
+        @db.create_table! :transaction_test do
+          primary_key :id
+          String :name
+        end
+      end
+
+      should "be able to commit a transaction" do
+        assert_equal 0, @db[:transaction_test].count
+        @db.transaction do
+          @db[:transaction_test] << { :name => 'commited' }
+        end
+        assert_equal 1, @db[:transaction_test].count
+      end
+
+      should "be re-entrant" do
+        assert_equal 0, @db[:transaction_test].count
+        @db.transaction do
+          @db[:transaction_test] << { :name => 'first' }
+          @db.transaction do
+            @db[:transaction_test] << { :name => 'second' }
+          end
+        end
+        assert_equal 2, @db[:transaction_test].count
+      end
+
+      should "be able to rollback a transaction" do
+        assert_equal 0, @db[:transaction_test].count
+        @db.transaction do
+          @db[:transaction_test] << { :name => 'rollback' }
+          raise(Sequel::Rollback)
+        end 
+        assert_equal 0, @db[:transaction_test].count
+      end
+      
+      should "automatically rollback a transaction on error" do
+        assert_equal 0, @db[:transaction_test].count
+        assert_raise(RuntimeError) do
+          @db.transaction do
+            @db[:transaction_test] << { :name => 'error-induced rollback' }
+            raise "some error occurred"
+          end 
+        end
+        assert_equal 0, @db[:transaction_test].count
+      end
+
+      should "support savepoints" do
+        assert_equal 0, @db[:transaction_test].count
+        @db.transaction do
+          @db[:transaction_test] << { :name => 'Inigo Montoya' } # Inserted
+          @db.transaction(:savepoint => true) do # This savepoint is rolled back
+            @db[:transaction_test] << { :name => 'The 6-fingered Man' } # Not inserted
+            raise(Sequel::Rollback)
+          end
+        end
+        assert_equal 1, @db[:transaction_test].count
       end
     end
   end
