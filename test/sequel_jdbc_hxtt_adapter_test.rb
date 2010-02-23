@@ -118,6 +118,37 @@ class SequelJdbcHxttAdapterTest < Test::Unit::TestCase
       assert_equal 1, @db[:bool_test].filter(:val => false).count
     end
 
+    context "when comparing strings fields" do
+      setup do
+        @db.create_table! :case do
+          String :name
+        end
+        @db[:case] << { :name => 'colin casey' }
+        @db[:case] << { :name => 'Colin Casey' }
+      end
+
+      should "be case-sensitive" do
+        assert_equal 1, @db[:case].filter(:name => 'colin casey').count
+        assert_equal 1, @db[:case].filter(:name => 'Colin Casey').count
+      end
+
+      should "be able to convert a string field to lowercase" do
+        assert_equal 2, @db[:case].filter(:lower.sql_function(:name) => 'colin casey').count
+      end
+
+      should "be able to convert a string field to uppercase" do
+        assert_equal 2, @db[:case].filter(:upper.sql_function(:name) => 'COLIN CASEY').count
+      end
+
+      should "be able to do a case-sensitive string comparison" do
+        assert_equal 1, @db[:case].filter(:name.like('colin%')).count
+      end
+
+      should "be able to do a case-insensitive string comparison" do
+        assert_equal 2, @db[:case].filter(:name.ilike('colin%')).count
+      end
+    end
+
     context "when handling deletions" do
       setup do
         @db.create_table! :items do
