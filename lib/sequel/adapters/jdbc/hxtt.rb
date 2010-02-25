@@ -12,6 +12,9 @@ module Sequel
         SQL_COMMIT = "COMMIT".freeze
         SQL_SAVEPOINT = 'SAVEPOINT autopoint_%d'.freeze
         SQL_ROLLBACK_TO_SAVEPOINT = 'ROLLBACK TO SAVEPOINT autopoint_%d'.freeze
+        NULL = "NULL".freeze
+        NOT_NULL = "NOT NULL".freeze
+        UNIQUE = "UNIQUE".freeze
 
         # Return instance of Sequel::JDBC::HXTT::Dataset with the given opts.
         def dataset(opts=nil)
@@ -77,7 +80,7 @@ module Sequel
           null = column.include?(:null) ? column[:null] : column[:allow_null]
           sql << NOT_NULL if null == false
           sql << NULL if null == true
-          sql << " DEFAULT #{literal(column[:default])}" if column.include?(:default)
+          sql << " DEFAULT #{column[:default].is_a?(String) ? "'\"#{column[:default]}\"'" : literal(column[:default])}" if column.include?(:default)
           sql << " #{auto_increment_sql} " if column[:auto_increment]
           sql << PRIMARY_KEY if column[:primary_key]
           sql << column_references_column_constraint_sql(column) if column[:table]
@@ -138,7 +141,39 @@ module Sequel
 
         def supports_is_true?
           false
-        end        
+        end
+
+        def process_result_set(result)
+          # get column names
+          meta = result.getMetaData
+          cols = []
+          i = 0
+          meta.getColumnCount.times{cols << [output_identifier(meta.getColumnLabel(i+=1)), i]}
+          @columns = cols.map{|c| c.at(0)}
+          row = {}
+          blk = if @convert_types
+            lambda{ |n, i|
+              # XXX: temporary fix until i can figure out how to get the access column default Date() not to throw an error
+              begin
+                row[n] = convert_type(result.getObject(i))
+              rescue Exception => e
+                if e.message == 'java.sql.SQLException: Failed to get a string value from com.hxtt.d.d: DATE()'
+                  row[n] = 'DATE()'
+                else
+                  raise
+                end
+              end
+            }
+          else
+            lambda{|n, i| row[n] = result.getObject(i)}
+          end
+          # get rows
+          while result.next
+            row = {}
+            cols.each(&blk)
+            yield row
+          end
+        end
       end
     end
   end

@@ -96,14 +96,32 @@ class SequelJdbcHxttAdapterTest < Test::Unit::TestCase
         integer   :i
         timestamp :t
         String    :s
+        date      :d
       end
-      assert_equal @db.schema(:schema_test, :reload => true), [
+
+      assert_equal [
         [:id,{:type=>:integer, :db_type=>"INTEGER AUTO_INCREMENT", :default=>nil, :allow_null=>true, :primary_key=>true, :column_size=>4, :ruby_default=>nil}],
         [:b, {:type=>:boolean, :db_type=>"BOOLEAN", :default=>nil, :allow_null=>true, :primary_key=>false, :column_size=>0, :ruby_default=>nil}],
         [:i, {:type=>:integer, :db_type=>"INTEGER", :default=>nil, :allow_null=>true, :primary_key=>false, :column_size=>4, :ruby_default=>nil}],
         [:t, {:type=>:datetime, :db_type=>"TIMESTAMP", :default=>nil, :allow_null=>true, :primary_key=>false, :column_size=>8, :ruby_default=>nil}],
-        [:s, {:type=>:string, :db_type=>"VARCHAR", :default=>nil, :allow_null=>true, :primary_key=>false, :column_size=>510, :ruby_default=>nil}]
-      ]
+        [:s, {:type=>:string, :db_type=>"VARCHAR", :default=>nil, :allow_null=>true, :primary_key=>false, :column_size=>510, :ruby_default=>nil}],
+        [:d, {:type=>:datetime, :db_type=>"TIMESTAMP", :default=>nil, :allow_null=>true, :primary_key=>false, :column_size=>8, :ruby_default=>nil}]
+      ], @db.schema(:schema_test, :reload => true)
+    end
+
+    should "be able to set a default value on a column" do
+      @db.create_table! :words do
+        String :word
+        String :language, :default => 'en'
+      end
+
+      @db[:words] << { :word => 'hello' }
+      @db[:words] << { :word => 'bonjour', :language => 'fr' }
+      
+      assert_equal [
+        { :word => 'hello', :language => 'en' },
+        { :word => 'bonjour', :language => 'fr' }
+      ], @db[:words].all
     end
     
     should "be able to filter boolean columns" do
