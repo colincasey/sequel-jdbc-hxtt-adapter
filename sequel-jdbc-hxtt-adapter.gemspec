@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{sequel-jdbc-hxtt-adapter}
-  s.version = "0.0.0"
+  s.version = "0.1.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Colin Casey"]
-  s.date = %q{2010-02-11}
+  s.date = %q{2010-03-01}
   s.description = %q{Sequel adapter for working with MS Access files using JRuby and HXTT's pure JDBC Access driver.  Note: HXTT driver is not supplied but you can obtain a trial version or purchase it at http://www.hxtt.com/}
   s.email = %q{casey.colin@gmail.com}
   s.extra_rdoc_files = [
@@ -24,8 +24,10 @@ Gem::Specification.new do |s|
      "Rakefile",
      "VERSION",
      "lib/sequel/adapters/jdbc/hxtt.rb",
+     "lib/sequel/adapters/jdbc/resources/empty.mdb",
      "lib/sequel/jdbc_hxtt_adapter.rb",
-     "test/sequel-jdbc-hxtt-adapter_test.rb",
+     "sequel-jdbc-hxtt-adapter.gemspec",
+     "test/sequel_jdbc_hxtt_adapter_test.rb",
      "test/test_helper.rb"
   ]
   s.homepage = %q{http://github.com/colincasey/sequel-jdbc-hxtt-adapter}
@@ -35,7 +37,7 @@ Gem::Specification.new do |s|
   s.summary = %q{Sequel adapter for working with MS Access files using JRuby and HXTT's pure JDBC Access driver}
   s.test_files = [
     "test/test_helper.rb",
-     "test/sequel-jdbc-hxtt-adapter_test.rb"
+     "test/sequel_jdbc_hxtt_adapter_test.rb"
   ]
 
   if s.respond_to? :specification_version then
